@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 11, 2022 at 05:06 PM
+-- Generation Time: May 23, 2022 at 01:08 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.1
 
@@ -69,6 +69,13 @@ CREATE TABLE `sessions` (
   `heartbeat` bigint(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `sessions`
+--
+
+INSERT INTO `sessions` (`ID`, `sessionname`, `hostname`, `heartbeat`) VALUES
+(17, '2169', 'admin', 7);
+
 -- --------------------------------------------------------
 
 --
@@ -126,7 +133,7 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `users`
