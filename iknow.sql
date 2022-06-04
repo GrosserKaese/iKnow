@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: May 23, 2022 at 01:08 AM
--- Server version: 10.4.22-MariaDB
--- PHP Version: 8.1.1
+-- Host: localhost
+-- Generation Time: Jun 04, 2022 at 08:45 PM
+-- Server version: 10.4.21-MariaDB
+-- PHP Version: 8.1.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -66,15 +66,10 @@ CREATE TABLE `sessions` (
   `ID` bigint(20) NOT NULL,
   `sessionname` text DEFAULT NULL,
   `hostname` text DEFAULT NULL,
-  `heartbeat` bigint(20) NOT NULL DEFAULT 0
+  `heartbeat` bigint(20) NOT NULL DEFAULT 0,
+  `userID` bigint(20) DEFAULT NULL,
+  `ready` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `sessions`
---
-
-INSERT INTO `sessions` (`ID`, `sessionname`, `hostname`, `heartbeat`) VALUES
-(17, '2169', 'admin', 7);
 
 -- --------------------------------------------------------
 
@@ -133,7 +128,7 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `users`
