@@ -6,6 +6,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+    <script src="jquery-3.6.0.js"></script>        
         <title>Menu</title>
     </head>
     <body>
@@ -16,7 +17,7 @@
             <input type="text" id="hostname" name="joinsession">
             <input type="submit" id="joinsession" name="submit" value="Join Session">
         </form>
-        <h4>Frage einstellen</h4>
+        <h4 id="ueber" hidden>Frage einstellen</h4>
         <button onclick="switchSite('einstellen')">Frage einstellen</button>
         <?php 
             if($_SESSION['user_role'] == "admin"){
@@ -24,10 +25,10 @@
                 echo "<button onclick=switchSite('einsehen')>Fragen einsehen</button>";
             }
         ?>
+        <br><a href="logout.php">Logout</a>
     </body>
     <script>
         clearInterval();
-
         function switchSite(x){
             if(x == "einstellen"){
                 window.location = "addQuestions.php";

@@ -14,7 +14,7 @@
     </body>
     <script>
         var global_beat = 0;
-        setInterval(tickBeat,1000)
+        setInterval(tickBeat,1000);
 
         function tickBeat(){
             $("#beat").load("o_general.php",{

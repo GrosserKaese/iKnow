@@ -15,7 +15,7 @@
     <script>
         clearInterval();
         var global_beat = 0;
-        setInterval(tickBeat,1000)
+        setInterval(tickBeat,1000);
 
         function tickBeat(){
             global_beat = global_beat + 1;
