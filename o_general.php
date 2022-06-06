@@ -59,7 +59,12 @@
         }
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $dbh->beginTransaction();
-        $dbh->exec("insert into sessions (sessionname,hostname,userID) values ('" . $sessionnumber . "','" . $_SESSION['user_name'] . "'," . getUserIDfromName($_SESSION['user_name']) . ")");
+        $dbh->exec("insert into sessions (sessionname,hostname,userID,subject,class,modus) values ('" . $sessionnumber . "','" . 
+                                                                                                        $_SESSION['user_name'] . "'," . 
+                                                                                                        getUserIDfromName($_SESSION['user_name']) . ",'" .
+                                                                                                        $_POST['subject'] . "','" .
+                                                                                                        $_POST['class'] . "','" .
+                                                                                                        $_POST['modus'] . "')");
         $dbh->commit();
 
         $_SESSION['session_name'] = $sessionnumber;
@@ -70,6 +75,7 @@
 
         header("Location: waitingroom.php");
         // Session beitreten
+        //
     }else if(isset($_POST['submit']) && $_POST['submit'] == "Join Session"){
 
         $_SESSION['session_name'] = $_POST['joinsession'];
@@ -83,6 +89,7 @@
         header("Location: waitingroom.php");
 
         // hier wird der Herzschlag für den Taktgeber generiert
+        //
     }else if(isset($_POST['submit']) && $_POST['submit'] == "heartbeat"){
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
@@ -96,14 +103,16 @@
             }
         }
         // hier wird der Herzschlag empfangen
+        //
     }else if(isset($_POST['submit']) == true && $_POST['submit'] == "getBeat"){
         $stmt = $dbh->query("select * from sessions where sessionname='" . $_SESSION['session_name'] . "'");
         while($row = $stmt->fetch()){
             echo $row['heartbeat'];
         }
         // hier wird eine Frage hinzugefügt
+        //
     }else if(isset($_POST['submit']) && $_POST['submit'] == "addQuestion"){
-        // Apassen der Checkboxergebnisse, weil MySQL nur 0 und 1 annimmt
+        // Anpassen der Checkboxergebnisse, weil MySQL nur 0 und 1 annimmt
         $ch1 = 0;
         $ch2 = 0;
         $ch3 = 0;
@@ -150,6 +159,7 @@
                                                 "userName":"<?php echo $_SESSION['user_name'] ?>"},changeState());
             */
         }
+        // hier wird der Bereit-Status auf den Server übertragen
     }else if(isset($_POST['submit']) && $_POST['submit'] == "changeReadyState"){
         $stmt = $dbh->query("select * from sessions where userID='" . getUserIDfromName($_POST['username']) . "'");
         while($row = $stmt->fetch()){
@@ -169,5 +179,35 @@
                 }
             }
         }
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "Start"){
+
+        // Wenn im Wartezimmer auf Abbrechen gedrückt wird,
+        // macht es der Host, wird die Session zerstört, und seine Credentials gelöscht,
+        // macht es der Gast werden nur die Credentials gelöscht
+        //
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "Abbrechen"){
+        if($_SESSION['session_role'] == "host"){
+            $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $dbh->beginTransaction();
+            $dbh->exec("delete from sessions where sessionname=" . $_SESSION['session_name']);
+            $dbh->commit();
+
+            $_SESSION['session_name'] = "";
+            $_SESSION['session_role'] = "";
+
+        }else if($_SESSION['session_role'] == "guest"){
+            $_SESSION['session_name'] = "";
+            $_SESSION['session_role'] = "";            
+        }
+        header("Location:menu.php");
+        // hier wird die aktuelle Frage auf den Server gestellt
+        //
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "updateActQuestion"){
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec("update sessions set actQuestion=" . $_POST['question'] . " where sessionname='" . $_SESSION['session_name'] . "'");
+        $dbh->commit();
+        // hier wird die aktuelle Frage empfangen
+        //
     }
 ?>

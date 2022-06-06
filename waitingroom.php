@@ -23,9 +23,11 @@
         <input type="submit" id="readyButton" value="Bereit!" onclick=getReady("on")>
         <input hidden type="submit" id="stopButton" value="Stop!" onclick=getReady("off")>
         
+
         <form action="o_general.php" method="POST">
-            <input type="submit" id="submit" name="submit" value="Abbrechen">
-        </form><br>
+            <input type="submit" name="cancel" value="Abbrechen">
+        </form>
+
     </body>
     <script>
         var readyState = 0;
@@ -71,10 +73,11 @@
 
         function changeState(){
             console.log(readyState.responseText , " " , ownReadyState);
+
             if((readyState.responseText == "0" || readyState.responseText == "")){
                 $("#readyHTML").prop('style').color = "red";
                 $("#readyHTML").text("nicht bereit");
-            }else{
+            }else if (readyState.responseText == "1"){
                 $("#readyHTML").prop('style').color = "green";
                 $("#readyHTML").text("bereit!");
                 if(ownReadyState == 1){
@@ -86,6 +89,10 @@
             }
             $("#readyState").text(readyState.responseText);
         } 
+
+        function gotoGame(){
+            window.location = "prepare.php";
+        }
             
     </script>
 </html>
