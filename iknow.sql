@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 06, 2022 at 08:23 PM
--- Server version: 10.4.21-MariaDB
--- PHP Version: 8.1.6
+-- Generation Time: Jun 07, 2022 at 04:56 PM
+-- Server version: 10.4.17-MariaDB
+-- PHP Version: 8.0.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,23 @@ SET time_zone = "+00:00";
 --
 -- Database: `iknow`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `doneQuestions`
+--
+
+CREATE TABLE `doneQuestions` (
+  `ID` bigint(20) NOT NULL,
+  `question` bigint(20) DEFAULT NULL COMMENT 'ID of the question in the catalogue',
+  `sessionname` int(11) NOT NULL,
+  `user` text DEFAULT NULL,
+  `bAnsw1` tinyint(1) NOT NULL DEFAULT 0,
+  `bAnsw2` tinyint(1) NOT NULL DEFAULT 0,
+  `bAnsw3` tinyint(1) NOT NULL DEFAULT 0,
+  `bAnsw4` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -73,7 +90,8 @@ CREATE TABLE `sessions` (
   `class` text DEFAULT NULL,
   `modus` text DEFAULT NULL,
   `ready` tinyint(1) NOT NULL DEFAULT 0,
-  `actQuestion` bigint(20) DEFAULT NULL
+  `actQuestion` bigint(20) DEFAULT 0,
+  `control` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -102,6 +120,12 @@ INSERT INTO `users` (`ID`, `user`, `role`, `passw`) VALUES
 --
 
 --
+-- Indexes for table `doneQuestions`
+--
+ALTER TABLE `doneQuestions`
+  ADD PRIMARY KEY (`ID`);
+
+--
 -- Indexes for table `questions`
 --
 ALTER TABLE `questions`
@@ -124,6 +148,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `doneQuestions`
+--
+ALTER TABLE `doneQuestions`
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+
+--
 -- AUTO_INCREMENT for table `questions`
 --
 ALTER TABLE `questions`
@@ -133,7 +163,7 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- AUTO_INCREMENT for table `users`

@@ -108,6 +108,7 @@
         $stmt = $dbh->query("select * from sessions where sessionname='" . $_SESSION['session_name'] . "'");
         while($row = $stmt->fetch()){
             echo $row['heartbeat'];
+            break;
         }
         // hier wird eine Frage hinzugefügt
         //
@@ -179,13 +180,15 @@
                 }
             }
         }
+        // hier wird das eigentliche Spiel gestartet
+        //
     }else if(isset($_POST['submit']) && $_POST['submit'] == "Start"){
-
+        header("Location:playfield.php");
         // Wenn im Wartezimmer auf Abbrechen gedrückt wird,
         // macht es der Host, wird die Session zerstört, und seine Credentials gelöscht,
         // macht es der Gast werden nur die Credentials gelöscht
         //
-    }else if(isset($_POST['submit']) && $_POST['submit'] == "Abbrechen"){
+    }else if(isset($_POST['cancel']) && $_POST['cancel'] == "Abbrechen"){
         if($_SESSION['session_role'] == "host"){
             $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $dbh->beginTransaction();
@@ -199,6 +202,7 @@
             $_SESSION['session_name'] = "";
             $_SESSION['session_role'] = "";            
         }
+
         header("Location:menu.php");
         // hier wird die aktuelle Frage auf den Server gestellt
         //
@@ -207,7 +211,61 @@
         $dbh->beginTransaction();
         $dbh->exec("update sessions set actQuestion=" . $_POST['question'] . " where sessionname='" . $_SESSION['session_name'] . "'");
         $dbh->commit();
-        // hier wird die aktuelle Frage empfangen
+        // hier wird signalisiert, dass der jeweilige Spieler fertig ist mit der Frage
         //
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "flagQuestionDone"){
+        // Zusammenholen der geforderten Variablen
+        //
+        $sessionID = $_SESSION['session_name'];
+        $user = $_SESSION['user_name'];
+        $questID = $_POST['question'];
+        
+        $bAnsw1 = 0;
+        $bAnsw2 = 0;
+        $bAnsw3 = 0;
+        $bAnsw4 = 0;
+        
+        if($_POST['bansw1'] == "true"){
+            $bAnsw1 = 1;
+        }
+        if($_POST['bansw2'] == "true"){
+            $bAnsw2 = 1;
+        }
+        if($_POST['bansw3'] == "true"){
+            $bAnsw3 = 1;
+        }
+        if($_POST['bansw4'] == "true"){
+            $bAnsw4 = 1;
+        }
+        
+        // Eintragen der geforderten Variablen
+        //
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec("insert into doneQuestions (question,sessionname,user,bAnsw1,bAnsw2,bAnsw3,bAnsw4) values ('" . $questID . "','" . $sessionID . "','" . $user . "','" . $bAnsw1 . "','" . $bAnsw2 . "','" . $bAnsw3 . "','" . $bAnsw4 . "')");
+        $dbh->commit();  
+        
+        // Ändern des Control-Status, dass der Spieler fertig ist
+        //
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec( "update sessions set control=1 where sessionname='" . $_SESSION['session_name'] . "' and userID=" . getUserIDfromName($_SESSION['user_name']));
+        $dbh->commit();
+        // Holen des Control-Status des Mitspielers
+        //
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "getControlState"){
+        $stmt = $dbh->query("select * from sessions where sessionname=" . $_SESSION['session_name']);
+        while($row = $stmt->fetch()){
+            if($row['userID'] != getUserIDfromName($_SESSION['user_name'])){
+                echo $row['control'];
+                break;
+            }
+        }
+        // Den Control-Status wieder auf 0 setzen
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "setControlState"){
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec( "update sessions set control=0 where sessionname='" . $_SESSION['session_name'] . "' and userID=" . getUserIDfromName($_SESSION['user_name']));
+        $dbh->commit();        
     }
 ?>

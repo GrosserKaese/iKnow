@@ -38,10 +38,8 @@
             readyState = $.get("o_general.php",{"submit":"getReadyState",
                                                 "sessionID":"<?php echo $_SESSION['session_name']; ?>",
                                                 "userName":"<?php echo $_SESSION['user_name'] ?>"},changeState());
-
-            
         }
-        
+
         // Lässt den Bereit-Button erscheinen oder verschwinden
         // teilt dies über das Skript dem Server mit
         function getReady(x){
@@ -68,7 +66,7 @@
                     value: "off"
                 },null);                              
             }
-            
+
         }
 
         function changeState(){
@@ -85,14 +83,10 @@
                 }else{
                     $("#iSubmit").prop('hidden',true);
                 }
-                
+
             }
             $("#readyState").text(readyState.responseText);
         } 
-
-        function gotoGame(){
-            window.location = "prepare.php";
-        }
             
     </script>
 </html>
