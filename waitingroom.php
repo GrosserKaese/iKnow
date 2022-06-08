@@ -42,6 +42,29 @@
 
         // Lässt den Bereit-Button erscheinen oder verschwinden
         // teilt dies über das Skript dem Server mit
+
+        if(ownReadyState == 1){
+            $("#readyButton").prop('hidden',true);
+                $("#stopButton").prop('hidden',false);
+
+                $.post("o_general.php",{
+                    submit: "changeReadyState",
+                    sessionname: "<?php echo $_SESSION['session_name'] ?>",
+                    username: "<?php echo $_SESSION['user_name']; ?>",
+                    value: "on"
+                },null);
+        }else{
+            $("#readyButton").prop('hidden',false);
+                $("#stopButton").prop('hidden',true);
+
+                $.post("o_general.php",{
+                    submit: "changeReadyState",
+                    sessionname: "<?php echo $_SESSION['session_name'] ?>",
+                    username: "<?php echo $_SESSION['user_name']; ?>",
+                    value: "off"
+                },null);                 
+        }
+
         function getReady(x){
             if(x == "on"){
                 ownReadyState = 1;

@@ -6,6 +6,7 @@
     //$_SESSION['session_role']     =       "host","guest"
     //$_SESSION['user_name']        =       z.B. "Brettschneider_Horst1966"
     //$_SESSION['session_name']     =       z.B. "0815" oder "4711"
+    //$_SESSION['game_mode']        =       coop oder versus
 
 
     // ein paar Hilfsfunktionen
@@ -72,6 +73,9 @@
         // KRITISCH! Hier wird in die Session geschrieben, dass 
         // der User der Taktgeber ist. Wichtig für waitingroom.php und playfield.php
         $_SESSION['session_role'] = "host";
+
+        // hier wird der Spielmodus festgehalten
+        $_SESSION['game_mode'] = $_POST['modus'];
 
         header("Location: waitingroom.php");
         // Session beitreten
@@ -256,7 +260,7 @@
     }else if(isset($_POST['submit']) && $_POST['submit'] == "getControlState"){
         $stmt = $dbh->query("select * from sessions where sessionname=" . $_SESSION['session_name']);
         while($row = $stmt->fetch()){
-            if($row['userID'] != getUserIDfromName($_SESSION['user_name'])){
+            if($row['userID'] <> getUserIDfromName($_SESSION['user_name'])){
                 echo $row['control'];
                 break;
             }
@@ -266,6 +270,5 @@
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $dbh->beginTransaction();
         $dbh->exec( "update sessions set control=0 where sessionname='" . $_SESSION['session_name'] . "' and userID=" . getUserIDfromName($_SESSION['user_name']));
-        $dbh->commit();        
+        $dbh->commit();
     }
-?>

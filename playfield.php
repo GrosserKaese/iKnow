@@ -1,4 +1,10 @@
 <?php
+/* 
+*   Das Playfield wird je nach Spielmodus aufbereitet.
+*   Der Host gibt die Taktrate vor, nach der der guest sich misst.
+*
+*
+*/
     session_start();
     include "o_header.php";
 ?>
@@ -11,6 +17,7 @@
     <body>
         <p>Session Number: <?php echo $_SESSION['session_name'] ?></p>
         <p id="beat"></p>
+        <p id="timer" style="color:red;"></p>
         <?php
             // Mach dir eine Liste mit den ID's der Fragen, die in Frage kommen
             //
@@ -82,8 +89,26 @@
         var ownRole = "<?php echo $_SESSION['session_role']; ?>";
         clearInterval();
         var global_beat = 0;
-        var actQuestion = 0;
+        var actQuestion = -1;
         var readyControl = "0";
+        var timeLeft = 0;
+        var gameMode = "<?php 
+                            $stmt = $dbh->query("select modus from sessions where sessionname='" . $_SESSION['session_name'] . "'");
+                            echo $stmt->fetchAll()[0][0];
+                        ?>";
+        var questionTimer = 0;
+        gameModeReset();
+
+        function gameModeReset(){
+            if(gameMode == "coop"){
+                questionTimer = 60;
+                timeLeft = 60;
+            }else if(gameMode == "versus"){
+                questionTimer = 45;
+                timeLeft = 45;
+            }
+        }
+
 
         // diese Liste enthält alle schon abgehandelten Fragen
         var finishedQuestions = [];
@@ -102,13 +127,13 @@
             setTimeout(displayQuestion(),1000);
         }
 
-        
+
         // hier wird signalisiert, dass der Spieler fertig ist;
         // übergeben wird auch die ID der Frage des Fragenkatalogs,
         // um sie richtig zuordnen zu können
         //
         function questionDone(){
-
+            console.log("Frage abgegeben!");
             $.post("o_general.php",{
                     submit:"flagQuestionDone",
                     question:actQuestion,
@@ -116,27 +141,29 @@
                     bansw2:$("#bAnsw2").prop("checked"),
                     bansw3:$("#bAnsw3").prop("checked"),
                     bansw4:$("#bAnsw4").prop("checked")
-                },null);
+                },function(){
+                    // Löschen des Textes
+                    $("#question").text("");
 
-                // Löschen des Textes
-                $("#question").text("");
+                    $("#answ1").text("");
+                    $("#answ2").text("");
+                    $("#answ3").text("");
+                    $("#answ4").text("");
 
-                $("#answ1").text("");
-                $("#answ2").text("");
-                $("#answ3").text("");
-                $("#answ4").text("");
+                    document.getElementById("bAnsw1").checked = false;
+                    document.getElementById("bAnsw2").checked = false;
+                    document.getElementById("bAnsw3").checked = false;
+                    document.getElementById("bAnsw4").checked = false;
 
-                document.getElementById("bAnsw1").checked = false;
-                document.getElementById("bAnsw2").checked = false;
-                document.getElementById("bAnsw3").checked = false;
-                document.getElementById("bAnsw4").checked = false;
+                    // Frage auf die Liste der fertigen Fragen schieben
+                    finishedQuestions.push(actQuestion);
+                    //questionList.pop();
 
-                // Frage auf die Liste der fertigen Fragen schieben
-                finishedQuestions.push(actQuestion);
-                global_wait_ticker = 1;
+                    global_wait_ticker = 1;
 
-                // Warten auf Signal von Mitspieler oder auf Spielende
-                document.getElementById("waitmessage").hidden = false;
+                    // Warten auf Signal von Mitspieler oder auf Spielende
+                    document.getElementById("waitmessage").hidden = false;
+                });
         }
 
         // Hier wird die nächste Frage getriggert,
@@ -144,52 +171,89 @@
         // die Zeit abgelaufen ist
         //
         function nextQuestion(){
+            $.post("o_general.php",{
+                    submit:"flagQuestionDone",
+                    question:actQuestion,
+                    bansw1:$("#bAnsw1").prop("checked"),
+                    bansw2:$("#bAnsw2").prop("checked"),
+                    bansw3:$("#bAnsw3").prop("checked"),
+                    bansw4:$("#bAnsw4").prop("checked")
+                },function(){
+                    // Löschen des Textes
+                    $("#question").text("");
 
+                    $("#answ1").text("");
+                    $("#answ2").text("");
+                    $("#answ3").text("");
+                    $("#answ4").text("");
+
+                    document.getElementById("bAnsw1").checked = false;
+                    document.getElementById("bAnsw2").checked = false;
+                    document.getElementById("bAnsw3").checked = false;
+                    document.getElementById("bAnsw4").checked = false;
+
+                    // Frage auf die Liste der fertigen Fragen schieben
+                    finishedQuestions.push(actQuestion);
+                    //questionList.pop();
+
+                    displayQuestion();
+                    gameModeReset();
+                });            
         }
 
         // displayQuestion wird beim Start der Session und bei jeder neuen Anforderung einer Frage getriggert
         function displayQuestion(){
+            console.log("Frage angezeigt!");
 
-            if(ownRole == "host"){
-                // Wähle zufällig eine Frage aus der Liste der zur Verfügung stehenden Fragen (questionList)
-                actQuestion = Math.floor(Math.random() * numberOfQuestions);
+            <?php
+                if($_SESSION['session_role'] == "host"){
 
-                // Schicke die Frage an den Server, damit der Mitspieler sie sehen kann
-                $.post("o_general.php",{
-                    submit:"updateActQuestion",
-                    question:actQuestion
-                },null);
+                    echo "    /* Wähle zufällig eine Frage aus der Liste der zur Verfügung stehenden Fragen (questionList) */";
+                    echo "    actQuestion = Math.floor(Math.random() * questionList.length);";
+                    //echo "    if(questionList.length-1 <= actQuestion){";
+                    //echo "          window.location.assign('menu.php');}";
+                    echo "";
+                    echo "    /* Schicke die Frage an den Server, damit der Mitspieler sie sehen kann */";
+                    echo "    $.post('o_general.php',{";
+                    echo "        submit:'updateActQuestion',";
+                    echo "        question:actQuestion";
+                    echo "    },null);";
+                    echo "";
+                    echo "    /* Wirf die Frage an die Wand */";
+                    echo "    $('#question').text(questionList[actQuestion][1]);";
+                    echo "    $('#answ1').text(questionList[actQuestion][3]);";
+                    echo "    $('#answ2').text(questionList[actQuestion][5]);";
+                    echo "    $('#answ3').text(questionList[actQuestion][7]);";
+                    echo "    $('#answ4').text(questionList[actQuestion][9]);";
 
-                // Wirf die Frage an die Wand
-                $("#question").text(questionList[actQuestion][1]);
-                $("#answ1").text(questionList[actQuestion][3]);
-                $("#answ2").text(questionList[actQuestion][5]);
-                $("#answ3").text(questionList[actQuestion][7]);
-                $("#answ4").text(questionList[actQuestion][9]);
-
-            }else{
-                // TODO: Nicht Inline, sondern als Funktion
-                actQuestion = <?php 
+                }else if($_SESSION['session_role'] == "guest"){
                     $stmt = $dbh->query("select actQuestion from sessions where sessionname='" . $_SESSION['session_name'] . "' and hostname <>'" . $_SESSION['user_name'] . "'");
                     while($row = $stmt->fetch()){
-                        echo $row['actQuestion'];
+                        echo "actQuestion = " . $row['actQuestion'] . ";";
                         break;                        
-                    }
-                ?>;
-                $("#question").text(questionList[actQuestion][1]);
-                $("#answ1").text(questionList[actQuestion][3]);
-                $("#answ2").text(questionList[actQuestion][5]);
-                $("#answ3").text(questionList[actQuestion][7]);
-                $("#answ4").text(questionList[actQuestion][9]);
-            }
+                    }          
 
+                    echo "$('#question').text(questionList[actQuestion][1]);";
+                    echo "$('#answ1').text(questionList[actQuestion][3]);";
+                    echo "$('#answ2').text(questionList[actQuestion][5]);";
+                    echo "$('#answ3').text(questionList[actQuestion][7]);";
+                    echo "$('#answ4').text(questionList[actQuestion][9]);";
+                }
+            ?>
         }
-
         function tickBeat(){
+
+            // der Timer wird graduell verkleinert
+            $("#timer").text(timeLeft);
+            timeLeft = questionTimer-global_beat%questionTimer;
+            if(timeLeft <= 1){
+                nextQuestion();
+            }
 
             // Hier wird je nach Host oder Gast der Heartbeat an den Server übermittelt
             // oder von diesem abgefragt
             //
+            console.log("GWT, Heartbeat, Frage, ReadyC " + global_wait_ticker + "," + global_beat + "," + actQuestion + "," + readyControl);
             if(ownRole == "host"){
                 global_beat = global_beat + 1;
                 document.getElementById('beat').innerText = global_beat;
@@ -203,34 +267,32 @@
             }else{
                 $('#beat').load('o_general.php',{
                 'submit':'getBeat'
-                },changeTick());
+                },function(responseTick){
+                    global_beat = responseTick;
+                    $("#beat").text(responseTick);
+                });
             }
 
             // wenn der Ticker anzeigt, dass der Spieler seine Frage abgegeben hat,
             // wird der Server angepingt und gefragt, ob der zweite Spieler fertig ist
             //
             if(global_wait_ticker == 1){
-                readyControl = $.post("o_general.php",{"submit":"getControlState"},checkIfDone());
+                console.log("Spieler bereit?");
+                $.post("o_general.php",{"submit":"getControlState"},function(respText){
+                    console.log("RespText: " + respText);
+                    if(respText == "1"){
+                        console.log("Bereit!");
+                        global_wait_ticker = 0;
+                        setTimeout(function(){ // KRITISCH!! Wenn hier kein Timeout gesetzt wird, 'überschlagen' sich die Fragen
+                            $.post("o_general.php",{submit:"setControlState"},function(){
+                                setTimeout(displayQuestion(),<?php if($_SESSION['session_role']=="host"){echo 250;}else{echo 1000;} ?>);
+                            });
+                            gameModeReset();
+                        },<?php if($_SESSION['session_role']=="host"){echo 500;}else{echo 1200;} ?>);
+                    }
+                });
             }
          
-        }   
-    
-        function checkIfDone(){
-            // sollte der zweite Spieler fertig sein, wird zur nächsten Frage geschaltet
-            // TODO: Delay für displayQuestion() einbauen
-            // TODO: die Zufallsfragengenerierung auslagern
-            if(readyControl.responseText == "1"){
-                console.log("Hab ich!");
-                global_wait_ticker = 0;
-                $.post("o_general.php",{submit:"setControlState"},null);
-                displayQuestion();
-            }                
         }
-
-        function changeTick(){
-            $('#beat').text(global_beat)           
-        }
-
-
     </script>
 </html>
