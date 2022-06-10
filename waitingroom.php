@@ -35,9 +35,7 @@
         setInterval(tickBeat,1000);
         function tickBeat(){
 
-            readyState = $.get("o_general.php",{"submit":"getReadyState",
-                                                "sessionID":"<?php echo $_SESSION['session_name']; ?>",
-                                                "userName":"<?php echo $_SESSION['user_name'] ?>"},changeState());
+            readyState = $.post("o_general.php",{submit:"getReadyState",state:"ready"},changeState());
         }
 
         // Lässt den Bereit-Button erscheinen oder verschwinden

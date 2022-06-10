@@ -6,6 +6,22 @@
 
     session_start();
     include "o_header.php";
+	include "o_functions.php";
+
+    // Mach dir eine Liste mit den ID's der Fragen, die in Frage kommen
+    //
+    $classes = $dbh->query("select subject,class from sessions where sessionname=" . $_SESSION['session_name'] . " and userID='" . getUserIDfromName($_SESSION['user_name']) . "'");
+    while($row = $classes->fetch()){
+        $subjectname = $row['subject'];
+        $classname = $row['class'];
+    }
+    
+    // kurz herausfinden, wie viele Fragen es insgesamt sind
+    $num1 = $dbh->query("select count(subject) from questions where subject='" . $subjectname . "' and class='" . $classname . "'");
+    $numrows = $num1->fetchAll()[0][0];
+
+    // braucht Javascript später
+    echo "<script>var numberOfQuestions = " . $numrows . "</script>";
 ?>
 <!DOCTYPE html>
 <html>
@@ -14,12 +30,7 @@
         <title>Playfield</title>
     </head>
     <body>
-		<p id="question"></p>
-		
-		<input type="checkbox" id="a1"><span id="answ1"></span><br>
-		<input type="checkbox" id="a2"><span id="answ2"></span><br>
-		<input type="checkbox" id="a3"><span id="answ3"></span><br>
-		<input type="checkbox" id="a4"><span id="answ4"></span><br>
+		<div id="questionOnDisplay"></div>
 
 		<p id="waitForPlayer" hidden>Warten auf Mitspieler...</p>
 		
@@ -59,7 +70,7 @@
 			if(bReady == 1){
 
 				// falls ja, prüfen, ob der Gegenspieler den Knopf gedrückt hat
-				$.post("o_general.php",{submit:"getReadyState"},function(readyState){
+				$.post("o_general.php",{submit:"getReadyState",state:"control"},function(readyState){
 					if(readyState == 1){
 
 						// falls ja, neue Frage anzeigen und beide Ready-Statusse wieder zurücksetzen
@@ -85,8 +96,37 @@
 			// falls ja, Input-Text anzeigen
 		}
 
+		// Hier wird das Spiel beendet und zur Ergebnisseite weitergeleitet.
+		// Auch wird hier das Spielfeld aufgeräumt.
+		//
+		function quitGame(){
+			console.log("Spiel wird beendet");
+
+			// Session wird gelöscht
+			$.post("o_general.php",{submit:"destroySession"},null);
+
+			window.location.assign("results.php");
+		}
+
 		function displayQuestion(){
 			console.log("Frage angezeigt!");
+
+			// neue Frage holen, der Server entscheidet selbst,
+			// welche Frage drankommt
+			$.post("o_general.php",{submit:"getNewQuestion",
+									subject:"<?php echo $subjectname; ?>",
+									class:"<?php echo $classname; ?>",
+									session:"<?php echo $_SESSION['session_name'] ?>"},function(returnHTML){
+										if(returnHTML == "forceQuit"){
+
+											// in diesem Fall gibt es keine Fragen mehr, die noch nicht beantwortet wurden.
+											quitGame();
+										}else{
+											$("#questionOnDisplay").html(returnHTML);
+										}
+										
+									});
+
 		}
 
 		// Bei Klicken des "Fertig"-Knopfes
