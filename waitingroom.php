@@ -32,10 +32,17 @@
     <script>
         var readyState = 0;
         var ownReadyState = 0;
+        const ownRole = "<?php echo $_SESSION['session_role'] ?>";
         setInterval(tickBeat,1000);
         function tickBeat(){
-
             readyState = $.post("o_general.php",{submit:"getReadyState",state:"ready"},changeState());
+            if(ownRole == "guest" && ownReadyState == 1){
+                $.post("o_general.php",{submit:"Start"},function(val){
+                    if(val == "start"){
+                        window.location.assign("playfield.php");
+                    }
+                });
+            }
         }
 
         // Lässt den Bereit-Button erscheinen oder verschwinden
@@ -100,7 +107,9 @@
                 $("#readyHTML").prop('style').color = "green";
                 $("#readyHTML").text("bereit!");
                 if(ownReadyState == 1){
-                    $("#iSubmit").prop('hidden',false);
+                    if(ownRole == "host"){
+                        $("#iSubmit").prop('hidden',false);
+                    }
                 }else{
                     $("#iSubmit").prop('hidden',true);
                 }

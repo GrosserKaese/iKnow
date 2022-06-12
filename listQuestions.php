@@ -2,7 +2,7 @@
     session_start();
     include "o_header.php";
     // nur zur Sicherheit, dass hier kein Unbefleckter herumeiert
-    if($_SESSION['user_role'] != "admin"){
+    if($_SESSION['user_role'] <> "admin"){
         $_SESSION['user_role'] == "";
         header('Location:index.php');
     }
