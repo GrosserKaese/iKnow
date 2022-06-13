@@ -377,12 +377,13 @@
             $qCnt++;
         }
         // *******************************************************************************************
-        // Die aktive Session wird zerstört und die Sessioncredentials zurückgesetzt
+        // Die aktive Session wird zerstört und die Sessioncredentials zurückgesetzt sowie die Fragen gelöscht
         // *******************************************************************************************
     }else if(isset($_POST['submit']) && $_POST['submit'] == "destroySession"){
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $dbh->beginTransaction();
         $dbh->exec("delete from sessions where sessionname=" . $_SESSION['session_name']);
+        $dbh->exec("delete from donequestions where sessionname=" . $_SESSION['session_name']);
         $dbh->commit();
 
         $_SESSION['session_name'] = "";
@@ -432,6 +433,10 @@
         }else{
             echo "one";
         }
+        // *******************************************************************************************
+        // Gast prüft, ob Host schon die nächste Frage gestellt hat, indem er den Zähler der zuletzt
+        // beantworteten Frage mit seinem lokalen Zähler vergleicht
+        // *******************************************************************************************          
     }else if(isset($_POST['submit']) && $_POST['submit'] == "checkQuestionState"){
         $bFoundQuestion = false;
         $stmt = $dbh->query("select * from donequestions where sessionname=" . $_SESSION['session_name']);
@@ -441,6 +446,20 @@
                 break;
             }
         }
-
+        // *******************************************************************************************
+        // Prüfung, ob die eigene Session noch läuft
+        // *******************************************************************************************    
         echo $bFoundQuestion;
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "checkSessionState"){
+        $status = "false";
+
+        $stmt = $dbh->query("select * from sessions");
+        while($row = $stmt->fetch()){
+            if($row['sessionname'] == $_SESSION['session_name']){
+                $status = "true";
+                break;
+            }
+        }
+
+        echo $status;
     }

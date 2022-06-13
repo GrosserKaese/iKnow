@@ -45,11 +45,12 @@
 
 		<p id="waitForPlayer" hidden>Warten auf Mitspieler...</p>
 		<p id="failMess" style="color:red;" hidden>Antworten stimmen nicht überein!</p>
+		<div id="leftGame" hidden><span style="color:red;"><b>Mitspieler hat Spiel verlassen! Spiel wird beendet.</b></span></div><br>
 		
 		<button id="done">Fertig!</button><br>
 		<button id="flagQuestion">Frage melden</button><br>
 		<input type="text" id="flagText" hidden><br>
-		<button id="cancel">Abbrechen</button>
+		<button id="cancel">Spiel abbrechen</button>
     </body>
     <script>
 		console.log("Session:<?php echo $_SESSION['session_name']; ?>");
@@ -179,15 +180,37 @@
 				}
 			}
 
+			// Was passiert, wenn der Countdown abläuft?
+			// Frage wird an den Server übergeben und eine neue Frage wird geholt.
 			if(qCountdown == 0){
+				$.post("o_general.php",{submit:"setReadyState",status:2},null);
+				$.post("o_general.php",{submit:"flagQuestionDone",
+										a1:$("#a1").prop("checked"),
+										a2:$("#a2").prop("checked"),
+										a3:$("#a3").prop("checked"),
+										a4:$("#a4").prop("checked"),
+										qCounter:qCounter,
+										subject:"<?php echo $subjectname; ?>",
+										class:"<?php echo $classname; ?>"},null);				
+				$("#failMess").prop("hidden",true);
+				resetButtons();
 				nextQuestion();
-			}
-		
-			// prüfen, ob der Spieler die Frage meldet
+			}	
 
-			// falls ja, Input-Text anzeigen
+			// Was passiert, wenn die eigene Session plötzlich nicht mehr existiert?
+			// Dann wird angezeigt, dass das Gegenüber das Spiel beendet hat
+			$.post("o_general.php",{submit:"checkSessionState"},function(result){
+				if(result == "false"){
+					$("#leftGame").prop("hidden",false);
+					setTimeout(leaveGame,2000);
+				}
+			});
 		}
 
+		// Für den Spielabbruch
+		function leaveGame(){
+			window.location.assign("menu.php");
+		}
 
 		// Hilfsfunktion zum Zurücksetzen der Buttons
 		function resetButtons(){
@@ -257,7 +280,6 @@
 			qCounter++;	
 
 			resetTimer();
-			console.log("Frage angefordert.");
 			if(ownRole == "host"){
 				displayQuestion();
 			}else{
@@ -290,6 +312,12 @@
 										subject:"<?php echo $subjectname; ?>",
 										class:"<?php echo $classname; ?>"},null);
 				}
+		});
+
+		// Bei Klick auf den "Spiel abbrechen"-Button
+		$("#cancel").click(function(){
+			$.post("o_general.php",{submit:"destroySession"},null);
+			setTimeout(leaveGame,500);
 		});
 
 		// Bei Klicken des "Frage Melden" Buttons
