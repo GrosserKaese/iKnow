@@ -343,7 +343,7 @@
         $sessCnt++;
         $_SESSION['session_counter'] = $sessCnt;
 
-        if($sessCnt >= $numberOfQuestions || $sessCnt > 10){
+        if($sessCnt-1 >= $numberOfQuestions || $sessCnt-1 > 10){
             $sessCnt = null;
             $_SESSION['session_counter'] = null;
 
@@ -360,7 +360,7 @@
         }
 
         // eine Frage suchen
-        
+        $overflow = false;
         $bHasBeenPicked = true;
         while($bHasBeenPicked == true){
             $randomQuestNumber = rand(0,$numberOfQuestions-1);
@@ -397,6 +397,7 @@
                             echo "<input type='checkbox' id='a" . $i ."'>";
                             echo "<span id='answ" . $i . "'>" . $row['Answer' . $i] . "</span><br>";
                         }
+
                         break;                        
                     }
                 }
@@ -431,7 +432,7 @@
         // Die aktive Session wird zerstört und die Sessioncredentials zurückgesetzt sowie die Fragen gelöscht
         // *******************************************************************************************
     }else if(isset($_POST['submit']) && $_POST['submit'] == "destroySession"){
-// Fragencounter neutralisieren
+        // Fragencounter neutralisieren
         $_SESSION['session_counter'] = null;
 
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -553,4 +554,33 @@
                 echo "false";
             }
         }
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "flagQuestion"){
+        
+        // aktuelle Frage holen
+        $stmt = $dbh->query("select * from sessions where sessionname=" . $_SESSION['session_name']);
+        while($row = $stmt->fetch()){
+            $subject = $row['subject'];
+            $class = $row['class'];
+            $questNumber = $row['actQuestion']; // ...man möge mich beim nächsten Mal daran erinnern, die ID als zentrales Element zu nutzen.
+            break;
+        }
+
+        // Frage in der Questiondatenbank suchen
+        $stmt = $dbh->query("select * from questions where subject='" . $subject . "' and class='" . $class . "'");
+        $cnt = 0;
+        while($row = $stmt->fetch()){
+            if($questNumber == $cnt){
+                if($row['isFlagged'] <> 1 && $row['bIsReviewed'] <> 0){
+                    $finalID = $row['ID'];
+                }
+            }
+            $cnt++;
+        }
+
+        // Frage flaggen
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec("update questions set isFlagged=1,flaggedExplanation='" . $_POST['explanation'] . "' where ID=" . $finalID);
+        $dbh->commit();  
+        
     }

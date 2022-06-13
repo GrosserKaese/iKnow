@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 12, 2022 at 05:39 PM
+-- Generation Time: Jun 14, 2022 at 12:17 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.1
 
@@ -39,18 +39,6 @@ CREATE TABLE `donequestions` (
   `qCounter` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `donequestions`
---
-
-INSERT INTO `donequestions` (`ID`, `question`, `sessionname`, `user`, `bAnsw1`, `bAnsw2`, `bAnsw3`, `bAnsw4`, `qCounter`) VALUES
-(324, 7, 3419, 'admin', 1, 0, 0, 0, 1),
-(325, 7, 3419, 'guest', 1, 0, 0, 0, 1),
-(326, 3, 6293, 'admin', 1, 0, 0, 0, 1),
-(327, 3, 6293, 'guest', 0, 0, 0, 1, 1),
-(328, 8, 6293, 'admin', 0, 0, 1, 0, 2),
-(329, 8, 6293, 'guest', 0, 1, 0, 0, 2);
-
 -- --------------------------------------------------------
 
 --
@@ -73,21 +61,22 @@ CREATE TABLE `questions` (
   `explanation` text DEFAULT NULL,
   `time` timestamp NOT NULL DEFAULT current_timestamp(),
   `bIsReviewed` tinyint(1) NOT NULL DEFAULT 0,
-  `isFlagged` tinyint(1) NOT NULL DEFAULT 0
+  `isFlagged` tinyint(1) NOT NULL DEFAULT 0,
+  `flaggedExplanation` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `questions`
 --
 
-INSERT INTO `questions` (`ID`, `subject`, `class`, `question`, `bAnsw1`, `Answer1`, `bAnsw2`, `Answer2`, `bAnsw3`, `Answer3`, `bAnsw4`, `Answer4`, `explanation`, `time`, `bIsReviewed`, `isFlagged`) VALUES
-(2, 'Informatik B.Sc.', 'mathematische Logik', 'Was bedeutet A < B?', 1, 'A ist nicht größer als B', 0, 'B ist nicht größer als A', 0, 'A ist größer als B', 1, 'B ist größer als A', 'Hier ist auf die genaue Stellung der Worte zu achten!', '2022-05-04 13:09:45', 1, 0),
-(3, 'Informatik B.Sc.', 'mathematische Logik', 'Wenn A äquivalent B ist, was bedeutet das?', 1, 'Wenn A falsch und B falsch ist, sind A und B äquivalent.', 0, 'Wenn A wahr und B wahr ist, sind A und B disjunkt.', 0, 'Wenn A wahr und B falsch ist, sind A und B äquivalent.', 0, 'Es gibt keine Äquivalenz in mathematischer Logik', 'Äquivalenz nennt man in der Logik den Fall, wenn auf beiden Seiten dasselbe steht. Beide sind entweder falsch oder beide sind richtig, nur dann sind sie äquivalent. Nicht mit dem logischen UND verwechseln, wo beide wahr sein müssen, damit das UND wahr ist.', '2022-05-04 13:17:15', 1, 0),
-(4, 'Informatik B.Sc.', 'Machine Learning', 'Was ist ein Knoten?', 1, 'Eine Zusammenkunft von zwei Switches', 0, 'eine kunstvolle Verzwirbelung von Seilen', 0, 'ein finnischer Nachname', 0, 'Es gibt keine Knoten', '', '2022-05-11 12:17:45', 1, 0),
-(5, 'Hotelmanagement M.A.', 'Architektur I', 'Warum sollte so oft wie möglich mit Überhängen gearbeitet werden?', 1, 'Weil Überhänge schön sind.', 0, 'Weil niemand Stabilität will', 1, 'Weil Überhänge nachgewiesenermaßen die höchste Stabilität besitzen', 0, 'Weil Säulen hässlich sind.', 'Weiteres hierzu ist, unter anderem, bei Monarch zu finden.', '2022-05-11 12:19:06', 0, 0),
-(6, 'Wirtschaftsinformatik B.A.', 'wirtsch. Rechnungswesen', 'Was ist der Unterschied zwischen Aufwand und Kosten?', 0, 'Kosten können kein Aufwand sein.', 1, 'Aufwände sind auch Kosten.', 1, 'Aufwände sind leistungsbezogen.', 0, 'Kosten sind leistungsbezogen.', 'Grundwissen, siehe Wichert et. al. ', '2022-05-11 12:22:15', 0, 0),
-(7, 'Informatik B.Sc.', 'mathematische Logik', 'Was ist 4+5?', 1, '2x4,5', 0, '5', 0, '4', 1, '9', 'Ein Resultat kann auch eine andere Rechnung sein!', '2022-06-11 10:40:43', 1, 0),
-(8, 'Informatik B.Sc.', 'mathematische Logik', 'Warum ist 2 größer als 1?', 1, 'Weil 2 größer als 1 ist.', 0, 'Weil im Joghurt keine Gräten sind.', 0, 'Bill Gates will es so.', 0, 'Das ändert sich von Fall zu Fall.', '', '2022-06-11 10:42:05', 1, 0);
+INSERT INTO `questions` (`ID`, `subject`, `class`, `question`, `bAnsw1`, `Answer1`, `bAnsw2`, `Answer2`, `bAnsw3`, `Answer3`, `bAnsw4`, `Answer4`, `explanation`, `time`, `bIsReviewed`, `isFlagged`, `flaggedExplanation`) VALUES
+(2, 'Informatik B.Sc.', 'mathematische Logik', 'Was bedeutet A < B?', 1, 'A ist nicht größer als B', 0, 'B ist nicht größer als A', 0, 'A ist größer als B', 1, 'B ist größer als A', 'Hier ist auf die genaue Stellung der Worte zu achten!', '2022-05-04 13:09:45', 1, 0, NULL),
+(3, 'Informatik B.Sc.', 'mathematische Logik', 'Wenn A äquivalent B ist, was bedeutet das?', 1, 'Wenn A falsch und B falsch ist, sind A und B äquivalent.', 0, 'Wenn A wahr und B wahr ist, sind A und B disjunkt.', 0, 'Wenn A wahr und B falsch ist, sind A und B äquivalent.', 0, 'Es gibt keine Äquivalenz in mathematischer Logik', 'Äquivalenz nennt man in der Logik den Fall, wenn auf beiden Seiten dasselbe steht. Beide sind entweder falsch oder beide sind richtig, nur dann sind sie äquivalent. Nicht mit dem logischen UND verwechseln, wo beide wahr sein müssen, damit das UND wahr ist.', '2022-05-04 13:17:15', 1, 0, NULL),
+(4, 'Informatik B.Sc.', 'Machine Learning', 'Was ist ein Knoten?', 1, 'Eine Zusammenkunft von zwei Switches', 0, 'eine kunstvolle Verzwirbelung von Seilen', 0, 'ein finnischer Nachname', 0, 'Es gibt keine Knoten', '', '2022-05-11 12:17:45', 1, 0, NULL),
+(5, 'Hotelmanagement M.A.', 'Architektur I', 'Warum sollte so oft wie möglich mit Überhängen gearbeitet werden?', 1, 'Weil Überhänge schön sind.', 0, 'Weil niemand Stabilität will', 1, 'Weil Überhänge nachgewiesenermaßen die höchste Stabilität besitzen', 0, 'Weil Säulen hässlich sind.', 'Weiteres hierzu ist, unter anderem, bei Monarch zu finden.', '2022-05-11 12:19:06', 0, 0, NULL),
+(6, 'Wirtschaftsinformatik B.A.', 'wirtsch. Rechnungswesen', 'Was ist der Unterschied zwischen Aufwand und Kosten?', 0, 'Kosten können kein Aufwand sein.', 1, 'Aufwände sind auch Kosten.', 1, 'Aufwände sind leistungsbezogen.', 0, 'Kosten sind leistungsbezogen.', 'Grundwissen, siehe Wichert et. al. ', '2022-05-11 12:22:15', 0, 0, NULL),
+(7, 'Informatik B.Sc.', 'mathematische Logik', 'Was ist 4+5?', 1, '2x4,5', 0, '5', 0, '4', 1, '9', '', '2022-06-11 10:40:43', 1, 1, 'albern'),
+(8, 'Informatik B.Sc.', 'mathematische Logik', 'Warum ist 2 größer als 1?', 1, 'Weil 2 größer als 1 ist.', 0, 'Weil im Joghurt keine Gräten sind.', 0, 'Bill Gates will es so.', 0, 'Das ändert sich von Fall zu Fall.', '', '2022-06-11 10:42:05', 1, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -167,7 +156,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `donequestions`
 --
 ALTER TABLE `donequestions`
-  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=330;
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=472;
 
 --
 -- AUTO_INCREMENT for table `questions`
@@ -179,7 +168,7 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=355;
+  MODIFY `ID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=394;
 
 --
 -- AUTO_INCREMENT for table `users`

@@ -330,7 +330,11 @@
 		// Bei Klicken des "Frage Melden" Buttons
 		//
 		$("#flagQuestion").click(function(){
-			
+			var flagBox = prompt("Warum Frage melden? (kurze Begründung)");
+			if(flagBox != ""){
+				$.post("o_general.php",{submit:"flagQuestion",explanation:flagBox},null);
+				alert("Frage wurde gemeldet und wird in den nächsten Runden nicht mehr gezogen");
+			}
 		});
 
     </script>
