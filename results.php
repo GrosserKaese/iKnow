@@ -3,8 +3,8 @@
     include "o_header.php";
     include "o_functions.php";
 
-    $sessionname = 6293;
-    $gamemode="versus";
+    $sessionname = $_SESSION['session_name'];
+    $gamemode = $_SESSION['game_mode'];
     $points = 0;
 ?>
 <!DOCTYPE html>
@@ -154,6 +154,9 @@ for($j = 0;$j < 2;$j++){
             }
         ?>
     </p>
+    <button id="newGame">Neues Spiel</button>
+    <button id="endGame">Spiel beenden</button>
+    <p id="sessionQuit" style="color:red;" hidden><b>Mitspieler hat das Spiel verlassen. Spiel wird beendet.</b></p>
     <p>
         <span>Legende:</span><br>
         <span>Antworten stimmen mit richtigen Antworten überein:       grün</span><br>
@@ -168,6 +171,35 @@ for($j = 0;$j < 2;$j++){
     </p>
     </body>
     <script>
-        
+        setInterval(tick,500);
+
+        function tick(){
+            $.post("o_general.php",{submit:"checkSessionState"},function(result){
+                if(result == "false"){
+                    $("#sessionQuit").prop("hidden",false);
+                    setTimeout(quitSession,2000);
+                }
+
+            });
+        }
+
+        function quitSession(){
+            window.location.assign("menu.php");
+        }
+
+        $("#newGame").click(function(){
+            $.post("o_general.php",{submit:"deleteQuestions"},function(){
+                window.location.assign("waitingroom.php");
+            });
+        });
+
+        $("#endGame").click(function(){
+            var text = "Spiel beenden?";
+            if(confirm(text)){
+                $.post("o_general.php",{submit:"destroySession"},function(){
+                    window.location.assign("menu.php");
+                });
+            }
+        });
     </script>
 </html>

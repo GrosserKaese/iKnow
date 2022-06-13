@@ -146,6 +146,13 @@
 					$("#heartbeat").text(qCountdown);
 				});
 
+				// Prüft, ob der Host schon auf der results-Seite ist
+				$.post("o_general.php",{submit:"checkHostReadyState"},function(result){
+					if(result == "true"){
+						window.location.assign("results.php");
+					}
+				});
+
 				// Prüft sich selbst, ob er abgegeben hat
 				if(bReady == 1){
 					setTimeout(function(){
@@ -182,7 +189,7 @@
 
 			// Was passiert, wenn der Countdown abläuft?
 			// Frage wird an den Server übergeben und eine neue Frage wird geholt.
-			if(qCountdown == 0){
+			if(qCountdown <= 1){
 				$.post("o_general.php",{submit:"setReadyState",status:2},null);
 				$.post("o_general.php",{submit:"flagQuestionDone",
 										a1:$("#a1").prop("checked"),
@@ -257,7 +264,7 @@
 										if(returnHTML == "forceQuit"){
 
 											// in diesem Fall gibt es keine Fragen mehr, die noch nicht beantwortet wurden.
-											quitGame();
+											window.location.assign("results.php");
 										}else{
 											
 											$("#questionOnDisplay").html(returnHTML);

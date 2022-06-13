@@ -319,8 +319,17 @@
         // Neue Frage schicken
         // *******************************************************************************************
     }else if(isset($_POST['submit']) && $_POST['submit'] == "getNewQuestion"){
+        
+        // Wenn noch nicht geschehen, dann initialisieren des Fragencounters
+        if(!isset($_SESSION['session_counter'])){
+            $sessCnt = 0;
+            $_SESSION['session_counter'] = $sessCnt;
+        }else{
+            $sessCnt = $_SESSION['session_counter'];
+        }
 
         // Herausfinden, wieviele Fragen in dem gezeigten Modul vorkommen
+        // und in $numberOfQuestions speichern
         $stmt = $dbh->query("select count(ID) from questions where subject='" . 
                             $_POST['subject'] . "' and class='" . $_POST['class'] . 
                             "' and bIsReviewed <> 0 and isFlagged <> 1");
@@ -329,31 +338,73 @@
             break;
         }
 
+        // Schalter, falls die maximale Fragenzahl erreicht ist
+        // oder alle Fragen aufgebraucht sind
+        $sessCnt++;
+        $_SESSION['session_counter'] = $sessCnt;
+
+        if($sessCnt >= $numberOfQuestions || $sessCnt > 10){
+            $sessCnt = null;
+            $_SESSION['session_counter'] = null;
+
+            // Zurücksetzen des "Ready"-Status, um zu signalisieren,
+            // dass auf Results weitergeleitet wird
+            $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $dbh->beginTransaction();            
+            $dbh->exec("update sessions set ready=0 where sessionname=" . $_SESSION['session_name'] . " and userID=" . getUserIDfromName($_SESSION['user_name']));
+            $dbh->commit();  
+
+            //header("Location:results.php");
+            echo "forceQuit";
+            return;
+        }
+
         // eine Frage suchen
         
-        $randomQuestNumber = rand(0,$numberOfQuestions-1);
-        $qCnt = 0;
-        $stmt = $dbh->query("select * from questions where subject='" . $_POST['subject'] . "' and class='" . $_POST['class'] . "'");
-        while($row = $stmt->fetch()){
-            if($randomQuestNumber == $qCnt){
-                if($row['bIsReviewed'] <> 0 && $row['isFlagged'] <> 1){
-                    
-                    // aktuelle Frage aktualisieren
-                    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    $dbh->beginTransaction();        
-                    $dbh->exec("update sessions set actQuestion=" . $qCnt . " where sessionname='" . $_SESSION['session_name'] . "'");
-                    $dbh->commit();
+        $bHasBeenPicked = true;
+        while($bHasBeenPicked == true){
+            $randomQuestNumber = rand(0,$numberOfQuestions-1);
+            $bHasBeenPicked = false;
 
-                    echo "<p>" . $row['question'] . "</p>";
-                    for($i = 1;$i < 5;$i++){
-                        echo "<input type='checkbox' id='a" . $i ."'>";
-                        echo "<span id='answ" . $i . "'>" . $row['Answer' . $i] . "</span><br>";
+            // suche die zufällig gewählte Nummer in der Liste der validen Fragen
+            $qCnt = 0;
+            $stmt = $dbh->query("select * from questions where subject='" . $_POST['subject'] . "' and class='" . $_POST['class'] . "'"); // ID
+            $stmt1 = $dbh->query("select * from donequestions where sessionname=" . $_SESSION['session_name']); // question
+            while($row = $stmt->fetch()){
+                if($randomQuestNumber == $qCnt){
+                    if($row['bIsReviewed'] <> 0 && $row['isFlagged'] <> 1){
+                        while($row1 = $stmt1->fetch()){
+                            if($row['ID'] == $row1['question']){
+                                $bHasBeenPicked = true;
+                                break;
+                            }
+                        }
+                    }else{
+                        break;
                     }
-                    break;
+                    if($bHasBeenPicked == true){
+                        break;
+                    }else{
+                        // aktuelle Frage aktualisieren
+                        // in actQuestion wird die hier errechnete laufende Nummer eingetragen, nicht die ID!
+                        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                        $dbh->beginTransaction();        
+                        $dbh->exec("update sessions set actQuestion=" . $qCnt . " where sessionname='" . $_SESSION['session_name'] . "'");
+                        $dbh->commit();
+                        
+                        echo "<p>" . $row['question'] . "</p>";
+                        for($i = 1;$i < 5;$i++){
+                            echo "<input type='checkbox' id='a" . $i ."'>";
+                            echo "<span id='answ" . $i . "'>" . $row['Answer' . $i] . "</span><br>";
+                        }
+                        break;                        
+                    }
                 }
+
+                $qCnt++;
             }
-            $qCnt++;
         }
+
         // *******************************************************************************************
         // Abholen der momentanen Frage
         // *******************************************************************************************        
@@ -380,6 +431,9 @@
         // Die aktive Session wird zerstört und die Sessioncredentials zurückgesetzt sowie die Fragen gelöscht
         // *******************************************************************************************
     }else if(isset($_POST['submit']) && $_POST['submit'] == "destroySession"){
+// Fragencounter neutralisieren
+        $_SESSION['session_counter'] = null;
+
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $dbh->beginTransaction();
         $dbh->exec("delete from sessions where sessionname=" . $_SESSION['session_name']);
@@ -446,10 +500,11 @@
                 break;
             }
         }
+ 
+        echo $bFoundQuestion;
         // *******************************************************************************************
         // Prüfung, ob die eigene Session noch läuft
-        // *******************************************************************************************    
-        echo $bFoundQuestion;
+        // *******************************************************************************************           
     }else if(isset($_POST['submit']) && $_POST['submit'] == "checkSessionState"){
         $status = "false";
 
@@ -460,6 +515,42 @@
                 break;
             }
         }
-
         echo $status;
+
+        // *******************************************************************************************
+        // Löschen der Fragen in der Session (bei Neustart Spiel)
+        // *******************************************************************************************          
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "deleteQuestions"){
+
+        // Fragencounter neutralisieren
+        $_SESSION['session_counter'] = null;
+
+        // GameStart auf Null setzen
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec("update sessions set bGameStarted=0 where sessionname=" . $_SESSION['session_name']);
+        $dbh->commit();    
+
+        $stmt = $dbh->query("select * from donequestions");
+        while($row = $stmt->fetch()){
+            if($row['sessionname'] == $_SESSION['session_name']){
+                $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $dbh->beginTransaction();
+                $dbh->exec("delete from donequestions where sessionname=" . $_SESSION['session_name']);
+                $dbh->commit();                  
+            }
+        }
+        // *******************************************************************************************
+        // Guest fragt den Ready-Status des Hosts ab, um zu wissen, ob schon auf results umgeleitet wird
+        // *******************************************************************************************          
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "checkHostReadyState"){
+        $stmt = $dbh->query("select * from sessions where sessionname=" . $_SESSION['session_name'] . " and userID<>'" . getUserIDfromName($_SESSION['user_name']) . "'");
+        while($row = $stmt->fetch()){
+            if($row['ready'] == 0){
+                echo "true";
+                break;
+            }else{
+                echo "false";
+            }
+        }
     }
