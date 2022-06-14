@@ -29,11 +29,11 @@
             </fieldset>
             <br>
             <br>
-            <input type="submit" id="submit" name="submit" value="Create session">
+            <input type="submit" id="submit" name="submit" value="Session erstellen">
         </form><br>
         <form action="o_general.php" method="POST">
-            <input type="text" id="hostname" name="joinsession">
-            <input type="submit" id="joinsession" name="submit" value="Join Session">
+            <input type="text" id="hostname" name="joinsession" required>
+            <input type="submit" id="joinsession" name="submit" value="Session beitreten">
         </form>
         <h4 id="ueber" hidden>Frage einstellen</h4>
         <button onclick="switchSite('einstellen')">Frage einstellen</button>

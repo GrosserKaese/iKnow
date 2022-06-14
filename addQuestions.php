@@ -47,5 +47,9 @@
                 $("#class").html("<option>Room Evaluation</option><option>Architektur I</option><option>Herbergsgeschichte</option>");
             }
         }        
+
+        $("#submit").click(function(){
+            alert("Frage gespeichert!");
+        });
     </script>
 </html>

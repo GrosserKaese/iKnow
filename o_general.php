@@ -32,7 +32,7 @@
         // *******************************************************************************************
         // Session erstellen
         // *******************************************************************************************
-    }else if(isset($_POST['submit']) && $_POST['submit'] == "Create session"){
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "Session erstellen"){
         $sessionnumber = rand(1,9999);
         $cnt = 1;
         $_SESSION['session_role'] = "host";
@@ -75,7 +75,7 @@
         // *******************************************************************************************
         // Session beitreten
         // *******************************************************************************************
-    }else if(isset($_POST['submit']) && $_POST['submit'] == "Join Session"){
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "Session beitreten"){
 
         $_SESSION['session_name'] = $_POST['joinsession'];
         $_SESSION['session_role'] = "guest";
@@ -115,6 +115,66 @@
             echo $row['heartbeat'];
             break;
         }
+
+        // *******************************************************************************************
+        // hier wird eine Frage verändert
+        // *******************************************************************************************
+    }else if(isset($_POST['submit']) && $_POST['submit'] == "updateQuestion"){
+        
+        if($_POST['answ1'] == "true"){
+            $a1 = 1;
+        }else{
+            $a1 = 0;
+        }
+
+        if($_POST['answ2'] == "true"){
+            $a2 = 1;
+        }else{
+            $a2 = 0;
+        }
+
+        if($_POST['answ3'] == "true"){
+            $a3 = 1;
+        }else{
+            $a3 = 0;
+        }
+
+        if($_POST['answ4'] == "true"){
+            $a4 = 1;
+        }else{
+            $a4 = 0;
+        }
+
+        if($_POST['bIsReviewed'] == "true"){
+            $isR = 1;
+        }else{
+            $isR = 0;
+        }
+
+        if($_POST['bIsFlagged'] == "true"){
+            $isF = 1;
+        }else{
+            $isF = 0;
+        }
+
+        $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh->beginTransaction();
+        $dbh->exec( "update questions set subject='" . $_POST['subject'] . "',
+                                            class='" . $_POST['class'] . "',
+                                            question='" . $_POST['question'] . "',
+                                            bAnsw1=" . $a1 . ",
+                                            Answer1='" . $_POST['check1'] . "',
+                                            bAnsw2=" . $a2 . ",
+                                            Answer2='" . $_POST['check2'] . "',
+                                            bAnsw3=" . $a3 . ",
+                                            Answer3='" . $_POST['check3'] . "',
+                                            bAnsw4=" . $a4 . ",
+                                            Answer4='" . $_POST['check4'] . "',
+                                            explanation='" . $_POST['explain'] . "',
+                                            bIsReviewed=" . $isR . ",
+                                            isFlagged=" . $isF . ",
+                                            flaggedExplanation='" . $_POST['flagExplain'] . "' where ID='" . $_POST['ID'] . "'");
+        $dbh->commit();
 
         // *******************************************************************************************
         // hier wird eine Frage hinzugefügt
